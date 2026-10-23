@@ -1,0 +1,33 @@
+# Local demo: OrderGuard (shopify provider) against the fake Shopify server.
+#
+#   make compose-up
+#
+# which generates keys.json if needed and runs, in effect:
+#
+#   MOCKSHOPIFY_TOKEN=<random> ORDERGUARD_API_KEYS="$(cat keys.json)" docker compose up --build
+#
+# No credentials are stored in this file or baked into images.
+services:
+  mockshopify:
+    build:
+      context: .
+      target: mockshopify
+    environment:
+      MOCKSHOPIFY_TOKEN: ${MOCKSHOPIFY_TOKEN:?set MOCKSHOPIFY_TOKEN}
+    ports:
+      - "127.0.0.1:9090:9090"
+
+  orderguard:
+    build:
+      context: .
+      target: server
+    depends_on: [mockshopify]
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      ORDERGUARD_ADDR: ":8080"
+      ORDERGUARD_PROVIDER: shopify
+      ORDERGUARD_API_KEYS: ${ORDERGUARD_API_KEYS:?set ORDERGUARD_API_KEYS to the contents of keys.json}
+      SHOPIFY_ENDPOINT: http://mockshopify:9090/admin/api/2025-07/graphql.json
+      SHOPIFY_ALLOW_INSECURE_ENDPOINT: "true"
+      SHOPIFY_ACCESS_TOKEN: ${MOCKSHOPIFY_TOKEN:?set MOCKSHOPIFY_TOKEN}

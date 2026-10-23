@@ -1,0 +1,12 @@
+/bin/
+coverage.out
+*.test
+# API key tables contain key digests and are environment-specific.
+keys.json
+.env
+deploy/oci/.env
+web/node_modules/
+deploy
+.claude
+docs/
+!docs/API.md
